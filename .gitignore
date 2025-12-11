@@ -12,6 +12,7 @@ node_modules
 # next.js
 /.next/
 /out/
+.next
 
 # production
 /build
@@ -19,6 +20,9 @@ node_modules
 # misc
 .DS_Store
 *.pem
+
+# local settings
+settings.local.json
 
 # debug
 npm-debug.log*
