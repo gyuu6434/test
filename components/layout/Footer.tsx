@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 
 export default function Footer() {
@@ -43,12 +44,12 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
           <p>Copyright 2024 제주감귤마켓. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="#" className="hover:text-orange-600 transition-colors">
+            <Link href="/privacy" className="hover:text-orange-600 transition-colors">
               개인정보처리방침
-            </a>
-            <a href="#" className="hover:text-orange-600 transition-colors">
+            </Link>
+            <Link href="/terms" className="hover:text-orange-600 transition-colors">
               이용약관
-            </a>
+            </Link>
           </div>
         </div>
       </div>

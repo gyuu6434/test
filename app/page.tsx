@@ -76,7 +76,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <section className="bg-gradient-to-r from-orange-50 to-orange-100 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 leading-tight">
-            신선한 제주 감귤을 당신의 식탁으로
+            신선한 제주감귤을<br className="md:hidden" /> 당신의 식탁으로
           </h1>
           <p className="text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed">
             제주도에서 직송되는 프리미엄 감귤 선물세트
