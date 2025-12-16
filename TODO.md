@@ -320,6 +320,39 @@ middleware.ts      # Next.js 미들웨어
 
 ---
 
+## ✅ 완료: 메인 페이지 Supabase 연동 (2024-12-17)
+
+### 메인 페이지 개선
+- [x] 메인 페이지(`app/page.tsx`)를 Supabase 연동으로 변경
+  - Mock 데이터 대신 Supabase에서 실시간 제품 목록 가져오기
+  - `is_available`이 true인 제품만 필터링
+  - 카테고리 파라미터에 따른 필터링 지원
+  - 최신순 정렬 (`created_at` 내림차순)
+- [x] 디자인 시스템 적용
+  - 컨테이너: `max-w-7xl mx-auto px-6 lg:px-10`
+  - 섹션 간격: `py-16 lg:py-24`
+  - 그리드 갭: `gap-6 lg:gap-8`
+  - 카드 호버 효과: `hover:shadow-lg hover:border-orange-200 hover:-translate-y-1`
+  - 이미지 확대 효과: `hover:scale-105`
+  - 배지 스타일: `bg-orange-500 text-white px-3 py-1 rounded-full`
+  - 가격 스타일: `text-2xl font-bold text-orange-600`
+  - 재고 상태 색상: 재고 있음(녹색), 품절(빨강)
+
+### Next.js 이미지 설정
+- [x] `next.config.ts`에 `images.unsplash.com` 호스트 추가
+
+### UI 컴포넌트 수정
+- [x] `components/ui/card.tsx`에서 기본 `py-6`, `gap-6` 제거 (여백 최적화)
+
+### 로딩 화면 추가
+- [x] `app/loading.tsx` 생성
+  - 오렌지 그라데이션 배경
+  - 빙글빙글 도는 원형 스피너
+  - 감귤 이모지
+  - "맛있는 감귤 가져오는 중..." 텍스트
+
+---
+
 ## 다음 단계 준비 (2-5단계 예정)
 
 ### 2단계: 구글 로그인
