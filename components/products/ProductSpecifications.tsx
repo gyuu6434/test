@@ -4,8 +4,18 @@ interface ProductSpecificationsProps {
   product: Product;
 }
 
+// 기본 스펙 값
+const defaultSpecifications = {
+  origin: '제주도',
+  harvest: '11월 - 2월',
+  sweetness: 8,
+  quantity: '약 30-40개',
+  packaging: '고급 선물 박스',
+};
+
 export default function ProductSpecifications({ product }: ProductSpecificationsProps) {
-  const { specifications } = product;
+  // specifications가 없을 경우 기본값 사용
+  const specifications = product.specifications || defaultSpecifications;
 
   return (
     <div className="space-y-6">
@@ -18,7 +28,7 @@ export default function ProductSpecifications({ product }: ProductSpecifications
               <th className="bg-slate-50 px-6 py-4 text-left font-semibold text-slate-900 w-1/3">
                 원산지
               </th>
-              <td className="px-6 py-4 text-slate-700">{specifications.origin}</td>
+              <td className="px-6 py-4 text-slate-700">{specifications.origin || '제주도'}</td>
             </tr>
             <tr>
               <th className="bg-slate-50 px-6 py-4 text-left font-semibold text-slate-900">
@@ -30,13 +40,13 @@ export default function ProductSpecifications({ product }: ProductSpecifications
               <th className="bg-slate-50 px-6 py-4 text-left font-semibold text-slate-900">
                 개수
               </th>
-              <td className="px-6 py-4 text-slate-700">{specifications.quantity}</td>
+              <td className="px-6 py-4 text-slate-700">{specifications.quantity || '-'}</td>
             </tr>
             <tr>
               <th className="bg-slate-50 px-6 py-4 text-left font-semibold text-slate-900">
                 수확시기
               </th>
-              <td className="px-6 py-4 text-slate-700">{specifications.harvest}</td>
+              <td className="px-6 py-4 text-slate-700">{specifications.harvest || '-'}</td>
             </tr>
             <tr>
               <th className="bg-slate-50 px-6 py-4 text-left font-semibold text-slate-900">
@@ -49,7 +59,7 @@ export default function ProductSpecifications({ product }: ProductSpecifications
                       <div
                         key={index}
                         className={`w-8 h-3 rounded ${
-                          index < specifications.sweetness
+                          index < (specifications.sweetness || 8)
                             ? 'bg-orange-600'
                             : 'bg-slate-200'
                         }`}
@@ -57,7 +67,7 @@ export default function ProductSpecifications({ product }: ProductSpecifications
                     ))}
                   </div>
                   <span className="text-slate-700 font-medium">
-                    {specifications.sweetness}/10
+                    {specifications.sweetness || 8}/10
                   </span>
                 </div>
               </td>
@@ -66,7 +76,7 @@ export default function ProductSpecifications({ product }: ProductSpecifications
               <th className="bg-slate-50 px-6 py-4 text-left font-semibold text-slate-900">
                 포장
               </th>
-              <td className="px-6 py-4 text-slate-700">{specifications.packaging}</td>
+              <td className="px-6 py-4 text-slate-700">{specifications.packaging || '선물 박스'}</td>
             </tr>
           </tbody>
         </table>
