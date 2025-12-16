@@ -353,6 +353,25 @@ middleware.ts      # Next.js 미들웨어
 
 ---
 
+## ✅ 완료: 상세 페이지 SEO 개선 (2024-12-17)
+
+### Open Graph & Twitter Card 메타데이터 추가
+- [x] `generateMetadata()` 함수 확장
+  - 제목: `상품명 | 제주감귤마켓` 형식
+  - 설명: 상품 설명 앞부분 (150자 제한)
+  - 이미지: 상품 첫 번째 이미지 사용
+- [x] Open Graph 태그 추가 (카카오톡, 페이스북 공유 미리보기)
+  - `og:title`, `og:description`, `og:image`
+  - `og:type: website`, `og:locale: ko_KR`
+  - `og:site_name: 제주감귤마켓`
+- [x] Twitter Card 태그 추가 (트위터/X 공유 미리보기)
+  - `summary_large_image` 카드 타입
+  - 제목, 설명, 이미지
+- [x] SEO 키워드 배열 추가
+  - 제주감귤, 감귤선물세트, 한라봉, 천혜향, 제주특산물, 명절선물, 상품명
+
+---
+
 ## 다음 단계 준비 (2-5단계 예정)
 
 ### 2단계: 구글 로그인
