@@ -286,6 +286,40 @@ npm run start
 
 ---
 
+## ✅ 완료: Supabase 연동 (2024-12-17)
+
+### Supabase 설정 완료
+- [x] `@supabase/supabase-js`, `@supabase/ssr` 라이브러리 설치
+- [x] 환경 변수 파일 생성 (`.env.local`)
+- [x] Supabase 클라이언트 설정 파일 생성
+  - `lib/supabase/client.ts` - 클라이언트 컴포넌트용
+  - `lib/supabase/server.ts` - 서버 컴포넌트용
+  - `lib/supabase/middleware.ts` - 세션 갱신 헬퍼
+- [x] `middleware.ts` 생성 - 인증 세션 관리
+- [x] Supabase 연결 테스트 완료
+
+### Products 테이블 설계 완료
+- [x] 테이블 스키마 SQL 작성 (재고 수량 포함)
+- [x] 샘플 데이터 5개 SQL 작성
+  - 제주 노지감귤 선물세트 3kg (29,000원)
+  - 제주 노지감귤 가정용 5kg (39,000원)
+  - 제주 한라봉 프리미엄 선물세트 3kg (59,000원)
+  - 제주 천혜향 선물세트 2kg (69,000원)
+  - 제주 프리미엄 감귤 3종 혼합세트 (89,000원)
+- [x] Unsplash 실제 감귤 이미지 URL 적용
+
+### 생성된 파일 목록
+```
+lib/supabase/
+├── client.ts      # 브라우저 클라이언트
+├── server.ts      # 서버 클라이언트
+└── middleware.ts  # 세션 헬퍼
+middleware.ts      # Next.js 미들웨어
+.env.local         # 환경 변수 (git 제외)
+```
+
+---
+
 ## 다음 단계 준비 (2-5단계 예정)
 
 ### 2단계: 구글 로그인
