@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import AddressSearch from './AddressSearch';
 
 export default function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  // returnUrl 파라미터 가져오기
+  const returnUrl = searchParams.get('returnUrl') || '/';
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
@@ -148,8 +152,8 @@ export default function SignupForm() {
         return;
       }
 
-      // 메인 페이지로 이동
-      router.push('/');
+      // returnUrl 또는 메인 페이지로 이동
+      router.push(returnUrl);
       router.refresh();
     } catch (err) {
       console.error('Signup error:', err);
@@ -164,6 +168,13 @@ export default function SignupForm() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
           {error}
+        </div>
+      )}
+
+      {/* returnUrl 안내 메시지 */}
+      {returnUrl !== '/' && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+          회원가입 완료 후 요청하신 페이지로 이동합니다.
         </div>
       )}
 
