@@ -116,19 +116,87 @@
 
 ---
 
-## 다음 단계 (2-5단계 예정)
+## Phase 8: 구글 로그인 및 회원가입 ✅
 
-### 2단계: 구글 로그인
-- NextAuth.js 설치 및 설정
-- Google OAuth Provider 연동
+### 8-1. Supabase 인증 설정 ✅
+**관련 파일:** `lib/supabase/client.ts`, `lib/supabase/server.ts`
+- [x] Supabase Auth 클라이언트 설정
+- [x] 서버 컴포넌트용 클라이언트 설정
 
-### 3단계: 결제
+### 8-2. 구글 OAuth 로그인 ✅
+**관련 파일:** `lib/hooks/useAuth.ts`, `app/auth/callback/route.ts`
+- [x] Google OAuth Provider 연동
+- [x] 로그인 콜백 라우트 구현
+- [x] 프로필 존재 여부 확인 로직 추가
+- [x] 신규 사용자 → `/signup` 리다이렉트
+- [x] 기존 사용자 → 메인 페이지 리다이렉트
+
+### 8-3. 회원가입 페이지 ✅
+**관련 파일:**
+- `app/(auth)/signup/page.tsx`
+- `components/auth/SignupForm.tsx`
+- `components/auth/AddressSearch.tsx`
+
+**구현 기능:**
+- [x] 이름 입력 (Google 이름 자동 입력)
+- [x] 전화번호 입력 (010-0000-0000 자동 포맷팅)
+- [x] Daum 우편번호 서비스 연동
+- [x] 우편번호 검색 기능
+- [x] 기본주소 자동 입력
+- [x] 상세주소 필수 입력
+- [x] 폼 유효성 검사
+- [x] Supabase profiles 테이블 저장
+- [x] 가입 완료 후 메인 페이지 이동
+
+### 8-4. 로그인 흐름 개선 ✅
+**로그인 플로우:**
+1. Google 로그인 클릭
+2. Google OAuth 인증
+3. `/auth/callback`으로 리다이렉트
+4. profiles 테이블에서 사용자 프로필 확인
+   - 프로필 없음 → `/signup` 페이지로 이동 (추가 정보 입력)
+   - 프로필 있음 → 메인 페이지로 이동
+
+### 8-5. 주소 검색 기능 ✅
+**Daum Postcode API:**
+- [x] 동적 스크립트 로딩
+- [x] 우편번호 자동 입력
+- [x] 도로명/지번 주소 자동 입력
+- [x] 상세주소 입력란 자동 포커스
+- [x] 에러 처리 (스크립트 로드 실패)
+
+### 8-6. Supabase 데이터베이스 스키마 ✅
+**profiles 테이블:**
+```sql
+create table profiles (
+  id uuid references auth.users on delete cascade primary key,
+  name text not null,
+  phone text not null,
+  address text not null,
+  created_at timestamp with time zone default now()
+);
+```
+
+**RLS 정책:**
+- [x] 본인 프로필만 조회/수정 가능
+- [x] INSERT 시 본인 ID만 허용
+
+---
+
+## 다음 단계 (3-5단계 예정)
+
+### 3단계: 장바구니 및 결제
 - 장바구니 상태 관리 (Zustand)
+- 장바구니 페이지 구현
 - PortOne 또는 Toss Payments 연동
+- 주문 테이블 스키마 설계
 
 ### 4단계: 내 주문 조회
-- 주문 내역/상세 페이지
+- 주문 내역 페이지
+- 주문 상세 페이지
+- 배송 상태 확인
 
 ### 5단계: 관리자 대시보드
 - 상품 관리 (CRUD)
 - 주문 관리
+- 통계 대시보드
