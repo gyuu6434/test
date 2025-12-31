@@ -1,14 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/lib/hooks/useAuth';
+import UserDropdown from '@/components/layout/UserDropdown';
 
 export default function Header() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const category = searchParams.get('category');
+
+  // Get auth state
+  const { user, profile, loading, signInWithGoogle, signOut } = useAuth();
 
   const navItems = [
     { label: '전체 상품', href: '/', active: pathname === '/' && !category },
@@ -40,21 +45,30 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center space-x-2">
+          {loading ? (
+            // Loading state: Show skeleton
+            <div className="h-9 w-20 bg-slate-100 rounded-lg animate-pulse" />
+          ) : user && profile ? (
+            // Logged in: Show user dropdown
+            <UserDropdown profile={profile} onSignOut={signOut} />
+          ) : (
+            // Logged out: Show login button
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signInWithGoogle}
+              className="text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200"
+            >
+              <LogIn className="h-4 w-4 mr-1" />
+              로그인
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
             disabled
-            title="2단계 구현 예정"
-            className="text-slate-500"
-          >
-            <User className="h-4 w-4 mr-1" />
-            로그인
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled
-            title="2단계 구현 예정"
+            title="3단계 구현 예정"
             className="text-slate-500"
           >
             <ShoppingCart className="h-4 w-4 mr-1" />
