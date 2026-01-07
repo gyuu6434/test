@@ -10,8 +10,8 @@ interface OrderSummaryProps {
 }
 
 export default function OrderSummary({ product }: OrderSummaryProps) {
-  const deliveryFee = 0; // 무료배송
-  const totalPrice = product.price + deliveryFee;
+  const deliveryFee: number = 0; // 무료배송
+  const totalPrice: number = product.price + deliveryFee;
 
   const discountRate = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)

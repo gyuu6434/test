@@ -109,7 +109,7 @@ export async function updateUserProfile(
     // profiles 테이블에 저장할 데이터 구성
     const updateData: {
       name?: string;
-      phone?: string;
+      phone?: string | null;
       address?: string;
     } = {};
 

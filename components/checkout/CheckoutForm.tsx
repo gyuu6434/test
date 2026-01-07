@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getUserProfileWithShipping } from '@/lib/supabase/profile';
+import { usePortOnePayment } from '@/lib/hooks/usePortOnePayment';
 
 interface CheckoutFormProps {
   product: Product;
@@ -25,7 +26,9 @@ interface ShippingInfo {
 export default function CheckoutForm({ product }: CheckoutFormProps) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { requestPayment } = usePortOnePayment();
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     name: '',
     phone: '',
@@ -141,7 +144,7 @@ export default function CheckoutForm({ product }: CheckoutFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -161,19 +164,62 @@ export default function CheckoutForm({ product }: CheckoutFormProps) {
       return;
     }
 
-    // TODO: 실제 주문 처리 로직 (3단계에서 구현)
-    alert('주문이 완료되었습니다!\n\n(실제 결제 기능은 3단계에서 구현됩니다.)');
-    console.log('주문 정보:', {
-      product: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-      },
-      shipping: shippingInfo,
-    });
+    // 결제 진행
+    setProcessingPayment(true);
 
-    // 홈으로 리다이렉트
-    router.push('/');
+    try {
+      // 포트원 결제 요청
+      const paymentResult = await requestPayment({
+        product,
+        shipping: shippingInfo,
+        userEmail: user?.email,
+      });
+
+      if (!paymentResult.success) {
+        alert(paymentResult.message || '결제에 실패했습니다.');
+        setProcessingPayment(false);
+        return;
+      }
+
+      // 결제 성공 - 서버에서 검증 및 주문 저장
+      const verifyResponse = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentId: paymentResult.paymentId,
+          orderData: {
+            productId: product.id,
+            productName: product.name,
+            productImage: product.images[0],
+            amount: product.price,
+            paymentMethod: 'card',
+            shipping: shippingInfo,
+          },
+        }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyData.success) {
+        alert('결제 검증에 실패했습니다. 고객센터로 문의해주세요.');
+        setProcessingPayment(false);
+        return;
+      }
+
+      // 주문 완료
+      alert(
+        `결제가 완료되었습니다!\n\n주문번호: ${verifyData.order.id}\n결제금액: ${verifyData.order.amount.toLocaleString()}원`
+      );
+
+      // 홈으로 리다이렉트
+      router.push('/');
+    } catch (error) {
+      console.error('결제 처리 에러:', error);
+      alert('결제 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setProcessingPayment(false);
+    }
   };
 
   return (
@@ -364,14 +410,21 @@ export default function CheckoutForm({ product }: CheckoutFormProps) {
         <Button
           type="submit"
           size="lg"
-          className="w-full h-14 text-lg bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-600/30"
+          disabled={processingPayment}
+          className="w-full h-14 text-lg bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <ShoppingCart className="w-5 h-5 mr-2" />
-          {product.price.toLocaleString()}원 결제하기
+          {processingPayment ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              결제 진행 중...
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              {product.price.toLocaleString()}원 결제하기
+            </>
+          )}
         </Button>
-        <p className="mt-3 text-center text-xs text-slate-400">
-          * 실제 결제 기능은 3단계에서 구현 예정입니다
-        </p>
       </div>
     </form>
   );
