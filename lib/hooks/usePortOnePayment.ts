@@ -59,18 +59,15 @@ export function usePortOnePayment() {
             email: userEmail,
           },
 
-          // 배송 정보
-          customData: {
-            shipping: {
-              name: shipping.name,
-              phone: shipping.phone,
-              postcode: shipping.postcode,
-              address: shipping.address,
-              detailAddress: shipping.detailAddress,
-              message: shipping.message,
-            },
+          // 배송 정보 (JSON 문자열로 전달)
+          customData: JSON.stringify({
             productId: product.id,
-          },
+            name: shipping.name,
+            phone: shipping.phone,
+            postcode: shipping.postcode,
+            address: shipping.address,
+            detailAddress: shipping.detailAddress,
+          }),
         });
 
         // 결제 성공 여부 확인

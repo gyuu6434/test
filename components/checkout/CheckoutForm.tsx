@@ -181,40 +181,10 @@ export default function CheckoutForm({ product }: CheckoutFormProps) {
         return;
       }
 
-      // 결제 성공 - 서버에서 검증 및 주문 저장
-      const verifyResponse = await fetch('/api/payments/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          paymentId: paymentResult.paymentId,
-          orderData: {
-            productId: product.id,
-            productName: product.name,
-            productImage: product.images[0],
-            amount: product.price,
-            paymentMethod: 'card',
-            shipping: shippingInfo,
-          },
-        }),
-      });
-
-      const verifyData = await verifyResponse.json();
-
-      if (!verifyData.success) {
-        alert('결제 검증에 실패했습니다. 고객센터로 문의해주세요.');
-        setProcessingPayment(false);
-        return;
-      }
-
-      // 주문 완료
-      alert(
-        `결제가 완료되었습니다!\n\n주문번호: ${verifyData.order.id}\n결제금액: ${verifyData.order.amount.toLocaleString()}원`
+      // 결제 성공 - 검증 페이지로 리다이렉트
+      router.push(
+        `/payment/success?paymentId=${paymentResult.paymentId}&orderId=${paymentResult.paymentId}`
       );
-
-      // 홈으로 리다이렉트
-      router.push('/');
     } catch (error) {
       console.error('결제 처리 에러:', error);
       alert('결제 중 오류가 발생했습니다. 다시 시도해주세요.');

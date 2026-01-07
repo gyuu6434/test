@@ -183,17 +183,121 @@ create table profiles (
 
 ---
 
-## 다음 단계 (3-5단계 예정)
+## Phase 9: 결제 시스템 구현 ✅
 
-### 3단계: 장바구니 및 결제
-- 장바구니 상태 관리 (Zustand)
-- 장바구니 페이지 구현
-- PortOne 또는 Toss Payments 연동
-- 주문 테이블 스키마 설계
+### 9-1. 결제 페이지 구현 ✅
+**관련 파일:**
+- `app/payment/page.tsx`
+- `components/checkout/CheckoutContent.tsx`
+- `components/checkout/CheckoutForm.tsx`
+
+**구현 기능:**
+- [x] 결제 페이지 레이아웃 (상품 정보 + 배송 정보 + 결제)
+- [x] 배송 정보 입력 폼 (이름, 전화번호, 주소)
+- [x] Daum 우편번호 검색 연동
+- [x] 개인정보 수집 동의 체크박스
+- [x] 보호된 라우트 (로그인 필수)
+- [x] 로그인 후 원래 페이지로 리다이렉트
+
+### 9-2. PortOne 결제 연동 ✅
+**관련 파일:**
+- `lib/hooks/usePortOnePayment.ts`
+- `.env.local` (환경 변수)
+
+**구현 기능:**
+- [x] PortOne SDK 동적 로딩
+- [x] 결제 요청 (KG이니시스 테스트)
+- [x] customData에 상품ID/배송정보 JSON 전달
+- [x] 결제 완료 후 `/payment/success` 리다이렉트
+
+**환경 변수:**
+```
+NEXT_PUBLIC_PORTONE_STORE_ID=store-66574616-...
+NEXT_PUBLIC_PORTONE_CHANNEL_KEY=channel-key-...
+PORTONE_API_SECRET=mQzHuDU...
+```
+
+### 9-3. 결제 검증 및 주문 저장 ✅
+**관련 파일:**
+- `app/payment/success/page.tsx`
+- `app/payment/success/actions.ts`
+
+**검증 플로우:**
+1. [x] URL 파라미터에서 paymentId, orderId 추출
+2. [x] PortOne API로 결제 정보 조회 (진위 확인)
+3. [x] 결제 상태 확인 (PAID)
+4. [x] customData 파싱 (Double-encoded JSON 처리)
+5. [x] Supabase에서 상품 정보 조회
+6. [x] 결제 금액 검증 (상품 가격과 일치)
+7. [x] 재고 확인
+8. [x] 중복 주문 확인
+9. [x] 주문 정보 DB 저장
+10. [x] 재고 차감
+11. [x] 성공/실패 화면 표시
+
+**보안:**
+- [x] 서버 사이드에서만 결제 검증 (Server Actions)
+- [x] 금액 위조 방지 (서버에서 실제 가격 확인)
+- [x] 재고 차감 실패 시 주문 롤백
+
+### 9-4. 데이터베이스 스키마 ✅
+**orders 테이블:**
+```sql
+create table orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  order_id text unique not null,
+  payment_id text not null,
+  product_id text not null,
+  product_name text not null,
+  amount integer not null,
+  quantity integer not null default 1,
+  status text not null default 'paid',
+  shipping_name text not null,
+  shipping_phone text not null,
+  shipping_postcode text not null,
+  shipping_address text not null,
+  shipping_detail_address text not null,
+  created_at timestamp with time zone default now()
+);
+```
+
+**products 테이블 (재고 관리):**
+```sql
+create table products (
+  id text primary key,
+  name text not null,
+  price integer not null,
+  stock integer not null default 0,
+  is_available boolean not null default true,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+```
+
+**RLS 정책:**
+- [x] orders: 본인 주문만 조회/생성 가능
+- [x] products: 누구나 조회 가능, 인증 사용자 재고 업데이트 가능
+
+**마이그레이션 파일:**
+- `supabase/migrations/20250107010000_create_orders_table.sql`
+- `supabase/migrations/20250107020000_create_products_table.sql`
+- `supabase/migrations/20250107030000_add_products_update_policy.sql`
+
+### 9-5. 트러블슈팅 가이드 ✅
+**파일:** `PAYMENT_TROUBLESHOOTING.md`
+- [x] 자주 발생하는 오류 및 해결 방법
+- [x] 디버깅 체크리스트
+- [x] 테스트 결제 시나리오
+- [x] 긴급 복구 방법 (DB 초기화)
+
+---
+
+## 다음 단계 (4-5단계 예정)
 
 ### 4단계: 내 주문 조회
-- 주문 내역 페이지
-- 주문 상세 페이지
+- 주문 내역 페이지 (`/orders`)
+- 주문 상세 페이지 (`/orders/[id]`)
 - 배송 상태 확인
 
 ### 5단계: 관리자 대시보드
