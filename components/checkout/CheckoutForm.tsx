@@ -173,6 +173,7 @@ export default function CheckoutForm({ product }: CheckoutFormProps) {
         product,
         shipping: shippingInfo,
         userEmail: user?.email,
+        userId: user?.id,
       });
 
       if (!paymentResult.success) {

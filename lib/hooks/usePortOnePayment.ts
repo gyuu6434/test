@@ -17,6 +17,7 @@ interface PaymentRequest {
   product: Product;
   shipping: ShippingInfo;
   userEmail?: string;
+  userId?: string;
 }
 
 interface PaymentResponse {
@@ -32,6 +33,7 @@ export function usePortOnePayment() {
       product,
       shipping,
       userEmail,
+      userId,
     }: PaymentRequest): Promise<PaymentResponse> => {
       try {
         // 주문 ID 생성 (타임스탬프 + 랜덤 문자열)
@@ -62,6 +64,7 @@ export function usePortOnePayment() {
           // 배송 정보 (JSON 문자열로 전달)
           customData: JSON.stringify({
             productId: product.id,
+            userId: userId,
             name: shipping.name,
             phone: shipping.phone,
             postcode: shipping.postcode,
