@@ -6,6 +6,9 @@ interface PortOnePayment {
   id: string
   status: string
   orderName: string
+  method?: {
+    type: string
+  }
   amount: {
     total: number
     currency: string
@@ -84,7 +87,7 @@ export async function verifyPayment(paymentId: string, orderId: string) {
     console.log('[VerifyPayment] Raw customData:', payment.customData)
     console.log('[VerifyPayment] customData type:', typeof payment.customData)
 
-    let customData: { productId: string; name: string; phone: string; postcode: string; address: string; detailAddress: string }
+    let customData: { productId: string; name: string; phone: string; postcode: string; address: string; detailAddress: string; memo?: string }
     try {
       if (!payment.customData) {
         throw new Error('customData is empty')
@@ -151,12 +154,12 @@ export async function verifyPayment(paymentId: string, orderId: string) {
       return { success: false, error: '상품의 재고가 부족합니다.' }
     }
 
-    // 9. 중복 주문 확인
+    // 9. 중복 주문 확인 (payment_id로 확인)
     console.log('[VerifyPayment] Checking for duplicate order')
     const { data: existingOrder, error: selectError } = await supabase
       .from('orders')
-      .select()
-      .eq('order_id', orderId)
+      .select('*, order_items(*)')
+      .eq('payment_id', paymentId)
       .maybeSingle()
 
     if (selectError) {
@@ -166,42 +169,45 @@ export async function verifyPayment(paymentId: string, orderId: string) {
 
     if (existingOrder) {
       console.log('[VerifyPayment] Duplicate order found, returning existing order')
+      const orderItem = existingOrder.order_items?.[0]
       return {
         success: true,
         order: {
-          orderId: existingOrder.order_id,
-          productId: existingOrder.product_id,
-          productName: existingOrder.product_name,
-          amount: existingOrder.amount,
+          orderId: existingOrder.id,
+          productId: orderItem?.product_id,
+          productName: orderItem?.product_name,
+          amount: existingOrder.total_amount,
           shipping: {
-            name: existingOrder.shipping_name,
-            phone: existingOrder.shipping_phone,
-            postcode: existingOrder.shipping_postcode,
+            name: existingOrder.recipient_name,
+            phone: existingOrder.recipient_phone,
+            postcode: existingOrder.shipping_zipcode,
             address: existingOrder.shipping_address,
-            detailAddress: existingOrder.shipping_detail_address,
+            detailAddress: '',
           },
         },
       }
     }
 
-    // 10. 주문 정보를 데이터베이스에 저장
+    // 10. 주문 정보를 데이터베이스에 저장 (새 스키마)
     console.log('[VerifyPayment] Inserting order into database')
+    const fullAddress = customData.detailAddress
+      ? `${customData.address} ${customData.detailAddress}`
+      : customData.address
+
     const { data: order, error: insertError } = await supabase
       .from('orders')
       .insert({
         user_id: user.id,
-        order_id: orderId,
         payment_id: paymentId,
-        product_id: product.id,
-        product_name: product.name,
-        amount: payment.amount.total,
-        quantity: 1,
+        payment_method: payment.method?.type || 'card',
+        payment_amount: payment.amount.total,
+        total_amount: payment.amount.total,
         status: 'paid',
-        shipping_name: customData.name,
-        shipping_phone: customData.phone,
-        shipping_postcode: customData.postcode,
-        shipping_address: customData.address,
-        shipping_detail_address: customData.detailAddress,
+        recipient_name: customData.name,
+        recipient_phone: customData.phone,
+        shipping_zipcode: customData.postcode,
+        shipping_address: fullAddress,
+        shipping_memo: customData.memo || null,
       })
       .select()
       .single()
@@ -210,9 +216,28 @@ export async function verifyPayment(paymentId: string, orderId: string) {
       console.error('[VerifyPayment] Database insert error:', insertError)
       return { success: false, error: `주문 정보 저장에 실패했습니다. (${insertError.message})` }
     }
-    console.log('[VerifyPayment] Order inserted:', order.order_id)
+    console.log('[VerifyPayment] Order inserted:', order.id)
 
-    // 11. 재고 차감
+    // 11. 주문 아이템 저장
+    console.log('[VerifyPayment] Inserting order item')
+    const { error: itemError } = await supabase
+      .from('order_items')
+      .insert({
+        order_id: order.id,
+        product_id: product.id,
+        product_name: product.name,
+        product_image: product.images?.[0] || null,
+        price: product.price,
+        quantity: 1,
+        subtotal: product.price,
+      })
+
+    if (itemError) {
+      console.error('[VerifyPayment] Order item insert error:', itemError)
+      // 주문은 저장되었으므로 에러를 무시하고 계속 진행
+    }
+
+    // 12. 재고 차감
     console.log('[VerifyPayment] Decreasing stock')
     const newStock = product.stock - 1
     const { error: stockError } = await supabase
@@ -222,9 +247,7 @@ export async function verifyPayment(paymentId: string, orderId: string) {
 
     if (stockError) {
       console.error('[VerifyPayment] Stock update error:', stockError)
-      // 재고 차감 실패 시 주문 삭제 (롤백)
-      await supabase.from('orders').delete().eq('order_id', orderId)
-      return { success: false, error: `재고 차감 오류: ${stockError.message}` }
+      // 재고 차감 실패해도 주문은 유지 (수동 처리 필요)
     }
 
     console.log('[VerifyPayment] Stock decreased:', {
@@ -232,21 +255,21 @@ export async function verifyPayment(paymentId: string, orderId: string) {
       remaining: newStock,
     })
 
-    // 12. 성공 응답
+    // 13. 성공 응답
     console.log('[VerifyPayment] Verification completed successfully')
     return {
       success: true,
       order: {
-        orderId: order.order_id,
-        productId: order.product_id,
-        productName: order.product_name,
-        amount: order.amount,
+        orderId: order.id,
+        productId: product.id,
+        productName: product.name,
+        amount: order.total_amount,
         shipping: {
-          name: order.shipping_name,
-          phone: order.shipping_phone,
-          postcode: order.shipping_postcode,
+          name: order.recipient_name,
+          phone: order.recipient_phone,
+          postcode: order.shipping_zipcode,
           address: order.shipping_address,
-          detailAddress: order.shipping_detail_address,
+          detailAddress: '',
         },
       },
     }

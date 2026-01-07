@@ -1,36 +1,32 @@
--- Create users table for storing user profile and shipping information
-CREATE TABLE IF NOT EXISTS public.users (
+-- Create profiles table for storing user profile and shipping information
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
   name TEXT,
-  avatar_url TEXT,
   phone TEXT,
-  postcode TEXT,
-  address TEXT,
-  detail_address TEXT,
+  address TEXT,  -- 형식: "[우편번호] 주소, 상세주소"
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable Row Level Security
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
 -- Users can view their own profile
 CREATE POLICY "Users can view own profile"
-  ON public.users
+  ON public.profiles
   FOR SELECT
   USING (auth.uid() = id);
 
 -- Users can insert their own profile
 CREATE POLICY "Users can insert own profile"
-  ON public.users
+  ON public.profiles
   FOR INSERT
   WITH CHECK (auth.uid() = id);
 
 -- Users can update their own profile
 CREATE POLICY "Users can update own profile"
-  ON public.users
+  ON public.profiles
   FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
@@ -39,12 +35,10 @@ CREATE POLICY "Users can update own profile"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, email, name, avatar_url)
+  INSERT INTO public.profiles (id, name)
   VALUES (
     NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
-    COALESCE(NEW.raw_user_meta_data->>'avatar_url', NEW.raw_user_meta_data->>'picture')
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1))
   );
   RETURN NEW;
 END;
@@ -67,10 +61,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to automatically update updated_at
-CREATE TRIGGER update_users_updated_at
-  BEFORE UPDATE ON public.users
+CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
-
--- Create index for faster lookups
-CREATE INDEX IF NOT EXISTS users_email_idx ON public.users(email);

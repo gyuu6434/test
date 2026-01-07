@@ -1,6 +1,7 @@
 'use client'
 
-import { LogOut, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { LogOut, ChevronDown, Package } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -45,6 +46,15 @@ export default function UserDropdown({ profile, onSignOut }: UserDropdownProps) 
             <p className="text-xs leading-none text-slate-500">{profile.email}</p>
           </div>
         </DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/orders" className="cursor-pointer">
+            <Package className="mr-2 h-4 w-4" />
+            <span>내 주문</span>
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 

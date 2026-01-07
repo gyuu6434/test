@@ -228,8 +228,8 @@ export async function POST(request: NextRequest) {
       // 7. 재고 차감
       const { data: stockResult, error: stockError } = await supabase
         .rpc('decrease_product_stock', {
-          product_id: orderInfo.productId,
-          quantity: 1,
+          p_product_id: orderInfo.productId,
+          p_quantity: 1,
         });
 
       if (stockError) {

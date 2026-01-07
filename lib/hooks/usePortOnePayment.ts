@@ -61,8 +61,8 @@ export function usePortOnePayment() {
             email: userEmail,
           },
 
-          // 배송 정보 (JSON 문자열로 전달)
-          customData: JSON.stringify({
+          // 배송 정보 (객체로 전달)
+          customData: {
             productId: product.id,
             userId: userId,
             name: shipping.name,
@@ -70,7 +70,7 @@ export function usePortOnePayment() {
             postcode: shipping.postcode,
             address: shipping.address,
             detailAddress: shipping.detailAddress,
-          }),
+          },
         });
 
         // 결제 성공 여부 확인
