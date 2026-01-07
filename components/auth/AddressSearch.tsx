@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface AddressData {
   zonecode: string; // 우편번호
@@ -45,6 +45,13 @@ export default function AddressSearch({
   const [postcode, setPostcode] = useState(defaultPostcode);
   const [address, setAddress] = useState(defaultAddress);
   const [detailAddress, setDetailAddress] = useState(defaultDetailAddress);
+
+  // Sync state with props when they change
+  useEffect(() => {
+    setPostcode(defaultPostcode);
+    setAddress(defaultAddress);
+    setDetailAddress(defaultDetailAddress);
+  }, [defaultPostcode, defaultAddress, defaultDetailAddress]);
 
   const handleSearch = () => {
     // 스크립트가 로드되지 않았으면 로드될 때까지 대기

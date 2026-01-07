@@ -18,6 +18,14 @@ export interface UserProfile {
   avatar_url: string | null
 }
 
+// Extended user profile with shipping information
+export interface UserProfileWithShipping extends UserProfile {
+  phone: string | null
+  postcode: string | null
+  address: string | null
+  detail_address: string | null
+}
+
 // Helper function to extract profile from Supabase User
 export function getUserProfile(user: User | null): UserProfile | null {
   if (!user) return null

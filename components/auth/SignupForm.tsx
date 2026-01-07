@@ -34,7 +34,7 @@ export default function SignupForm() {
 
       // 이미 프로필이 있는지 확인
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id')
         .eq('id', user.id)
         .single();

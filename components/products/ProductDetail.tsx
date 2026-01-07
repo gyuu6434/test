@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Product } from '@/lib/types/product';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +11,20 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
+  const router = useRouter();
   const discountRate = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
+
+  const handlePurchase = () => {
+    if (product.stock === 0) return;
+
+    const checkoutUrl = `/checkout?productId=${product.id}`;
+    console.log('ProductDetail - Navigating to:', checkoutUrl);
+    console.log('ProductDetail - Product ID:', product.id);
+
+    router.push(checkoutUrl);
+  };
 
   return (
     <div className="space-y-6">
@@ -95,6 +107,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       <div className="space-y-3 pt-4">
         <Button
           size="lg"
+          onClick={handlePurchase}
           className={`w-full h-14 text-lg ${
             product.stock > 0
               ? 'bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-600/30'
@@ -112,7 +125,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           )}
         </Button>
         <p className="text-center text-xs text-slate-400">
-          * 결제 기능은 3단계에서 구현 예정입니다
+          * 실제 결제 기능은 3단계에서 구현 예정입니다
         </p>
       </div>
 
